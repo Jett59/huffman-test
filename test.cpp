@@ -29,7 +29,13 @@ void bitstringTest() {
   bitString += true;
   bitString += true;
   assert(bitString.size() == 8);
-  assert(bitString.toByteString() == "\x9f");
+  assert(bitString.toByteString() == "\xf9");
+  assert((Bitstring() + bitString.toByteString()).toByteString() ==
+         bitString.toByteString());
   bitString += 'A';
-  assert(bitString.toByteString() == "\x9f\x41");
+  assert(bitString.toByteString() == "\xf9\x41");
+  bitString += false;
+  bitString += true;
+  assert((Bitstring() + bitString.toByteString()).toByteString() ==
+         bitString.toByteString());
 }

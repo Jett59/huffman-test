@@ -28,7 +28,7 @@ string Bitstring::toByteString() const {
     for (int bitPosition = 0; bitPosition < bitsInByte; bitPosition++) {
       bool bit = bits[bitPosition + (bytePosition * 8)];
       if (bit) {
-        byte |= 1 << (bitsInByte - bitPosition - 1);
+        byte |= 1 << bitPosition;
       }
     }
     result += byte;

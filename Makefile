@@ -1,7 +1,7 @@
 CXX:=clang++
 CXXFLAGS:=-std=c++17 -g -Wall -Wextra -pedantic
 
-LIB-SRCS:=bitstring.cpp
+LIB-SRCS:=bitstring.cpp huffman.cpp
 
 SRCS:=$(LIB-SRCS) main.cpp
 TEST-SRCS:=$(LIB-SRCS) test.cpp

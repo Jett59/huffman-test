@@ -19,20 +19,21 @@ public:
     }
   }
   void append(char byte) {
-    append((byte & 128) != 0);
-    append((byte & 64) != 0);
-    append((byte & 32) != 0);
-    append((byte & 16) != 0);
-    append((byte & 8) != 0);
-    append((byte & 4) != 0);
-    append((byte & 2) != 0);
     append((byte & 1) != 0);
+    append((byte & 2) != 0);
+    append((byte & 4) != 0);
+    append((byte & 8) != 0);
+    append((byte & 16) != 0);
+    append((byte & 32) != 0);
+    append((byte & 64) != 0);
+    append((byte & 128) != 0);
   }
   void append(const std::string &s) {
     for (auto byte : s) {
       append(byte);
     }
   }
+
   std::string toBinaryString() const;
   std::string toByteString() const;
   bool operator[](int index) const { return bits.at(index); }
@@ -83,5 +84,8 @@ public:
   BTree() = default;
   BTree(T value) : value(value) {}
 };
+
+std::string encode(const std::string &input);
+std::string decode(const std::string &input);
 
 #endif
