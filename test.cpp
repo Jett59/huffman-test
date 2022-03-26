@@ -6,9 +6,11 @@ using std::cerr;
 using std::endl;
 
 void bitstringTest();
+void huffmanTest();
 
 int main() {
   bitstringTest();
+  huffmanTest();
   return 0;
 }
 
@@ -39,3 +41,4 @@ void bitstringTest() {
   assert((Bitstring() + bitString.toByteString()).toByteString() ==
          bitString.toByteString());
 }
+void huffmanTest() {}

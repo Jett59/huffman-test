@@ -1,7 +1,9 @@
 #ifndef _HUFFMAN_H
 #define _HUFFMAN_H
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 class Bitstring {
@@ -33,10 +35,35 @@ public:
       append(byte);
     }
   }
+  void append(int value, int bitCount) {
+    for (int i = 0; i < bitCount; i++) {
+      bool bit = (value & (1 << i)) != 0;
+      append(bit);
+    }
+  }
 
   std::string toBinaryString() const;
   std::string toByteString() const;
+
   bool operator[](int index) const { return bits.at(index); }
+  int read(int offset, int bitCount) const {
+    int result = 0;
+    for (int i = 0; i < bitCount; i++) {
+      bool bit = bits[offset + i];
+      if (bit) {
+        result |= 1 << i;
+      }
+    }
+    return result;
+  }
+  Bitstring readBits(int offset, int bitCount) const {
+    Bitstring result;
+    for (int i = 0; i < bitCount; i++) {
+      result += bits[offset + i];
+    }
+    return result;
+  }
+
   Bitstring operator+(bool b) const {
     Bitstring result = *this;
     result.append(b);
@@ -77,12 +104,11 @@ public:
 
 template <typename T> class BTree {
 public:
-  BTree<T> *left;
-  BTree<T> *right;
-  T value;
+ std::shared_ptr<BTree<T>> left, right;
+ T value;
 
-  BTree() = default;
-  BTree(T value) : value(value) {}
+ BTree() = default;
+ BTree(T value) : value(value) {}
 };
 
 std::string encode(const std::string &input);
