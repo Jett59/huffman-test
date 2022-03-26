@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+program
+test
+
+# Other build output
+*.ilk
+*.pdb
