@@ -1,4 +1,5 @@
 #include "huffman.h"
+#include <cstddef>
 #include <map>
 #include <memory>
 #include <optional>
@@ -11,6 +12,7 @@ using std::make_shared;
 using std::map;
 using std::move;
 using std::optional;
+using std::pair;
 using std::priority_queue;
 using std::shared_ptr;
 using std::string;
@@ -28,7 +30,7 @@ struct DictionaryEntry {
     return result;
   }
   DictionaryEntry() = default;
-  DictionaryEntry(const Bitstring &bits, int offset) {
+  DictionaryEntry(const Bitstring &bits, size_t offset) {
     int codeLength = bits.read(offset, 4) + 1;
     code = bits.readBits(offset + 4, codeLength);
     byte = bits.read(offset + 4 + codeLength, 8);
@@ -36,7 +38,7 @@ struct DictionaryEntry {
 };
 
 struct ByteFrequency {
-  int frequency;
+  size_t frequency;
   char byte;
 };
 
@@ -52,8 +54,8 @@ using PriorityQueue =
     priority_queue<shared_ptr<HuffmanTree>, vector<shared_ptr<HuffmanTree>>,
                    HuffmanTreeCompare>;
 
-map<char, int> getFrequencies(const string &input) {
-  map<char, int> result;
+map<char, size_t> getFrequencies(const string &input) {
+  map<char, size_t> result;
   for (char c : input) {
     result[c]++;
   }
@@ -62,7 +64,7 @@ map<char, int> getFrequencies(const string &input) {
 
 shared_ptr<HuffmanTree> buildTree(const string &input) {
   PriorityQueue queue;
-  map<char, int> byteFrequencies = getFrequencies(input);
+  map<char, size_t> byteFrequencies = getFrequencies(input);
   for (auto &entry : byteFrequencies) {
     ByteFrequency byteFrequency;
     byteFrequency.byte = entry.first;
@@ -83,11 +85,12 @@ shared_ptr<HuffmanTree> buildTree(const string &input) {
   return queue.top();
 }
 
-void addCodesToMap(const HuffmanTree &tree, map<char, Bitstring> &output, const Bitstring &bits) {
+void addCodesToMap(const HuffmanTree &tree, map<char, Bitstring> &output,
+                   const Bitstring &bits) {
   if (tree.left == nullptr && tree.right == nullptr) {
     // Leaf
     output[tree.value.byte] = bits;
-  }else {
+  } else {
     if (tree.left != nullptr) {
       addCodesToMap(*tree.left, output, bits + /*0*/ false);
     }
@@ -119,8 +122,8 @@ string encode(const string &input) {
   for (char c : input) {
     payload += codeMap[c];
   }
-  int outputSize = payload.size() + dictionary.size() + 3;
-  int paddingBits = 8 - outputSize % 8;
+  size_t outputSize = payload.size() + dictionary.size() + 3;
+  size_t paddingBits = 8 - outputSize % 8;
   if (paddingBits == 8) {
     paddingBits = 0;
   }
@@ -128,4 +131,67 @@ string encode(const string &input) {
   result += dictionary;
   result += payload;
   return result.toByteString();
+}
+
+pair<map<char, Bitstring>, size_t>
+getCodeMap(Bitstring &bits, size_t firstEntry, size_t numEntries) {
+  map<char, Bitstring> result;
+  size_t currentOffset = firstEntry;
+  for (size_t i = 0; i < numEntries; i++) {
+    DictionaryEntry entry(bits, currentOffset);
+    result[entry.byte] = entry.code;
+    currentOffset += entry.getBits().size();
+  }
+  return pair{result, currentOffset};
+}
+
+shared_ptr<HuffmanTree> buildTree(const map<char, Bitstring> codeMap) {
+  auto result = make_shared<HuffmanTree>();
+  for (auto &entry : codeMap) {
+    const Bitstring &bits = entry.second;
+    auto tempTree = result;
+    for (size_t i = 0; i < bits.size(); i++) {
+      bool bit = bits[i];
+      if (bit) {
+        auto &rightBranch = tempTree->right;
+        if (rightBranch == nullptr) {
+          rightBranch = make_shared<HuffmanTree>();
+        }
+        tempTree = rightBranch;
+      } else {
+        auto &leftBranch = tempTree->left;
+        if (leftBranch == nullptr) {
+          leftBranch = make_shared<HuffmanTree>();
+        }
+        tempTree = leftBranch;
+      }
+    }
+    tempTree->value.byte = entry.first;
+  }
+  return result;
+}
+
+string decode(const string &inputString) {
+  string result;
+  Bitstring input;
+  input += inputString;
+  int paddingBits = input.read(0, 3);
+  size_t numBits = input.size() - paddingBits;
+  size_t numDictionaryEntries = input.read(3, 8) + 1;
+  auto [codeMap, payloadOffset] = getCodeMap(input, 11, numDictionaryEntries);
+  const auto treeRoot = buildTree(codeMap);
+  auto tree = treeRoot;
+  for (size_t offset = payloadOffset; offset < numBits; offset++) {
+    bool bit = input[offset];
+    if (bit) {
+      tree = tree->right;
+    } else {
+      tree = tree->left;
+    }
+    if (tree->left == nullptr && tree->right == nullptr) {
+      result += tree->value.byte;
+      tree = treeRoot;
+    }
+  }
+  return result;
 }

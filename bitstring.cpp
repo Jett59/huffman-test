@@ -18,14 +18,14 @@ string Bitstring::toBinaryString() const {
   return result;
 }
 string Bitstring::toByteString() const {
-  int byteCount = (bits.size() + 7) / 8;
+  size_t byteCount = (bits.size() + 7) / 8;
   string result;
   result.reserve(byteCount);
-  for (int bytePosition = 0; bytePosition < byteCount; bytePosition++) {
+  for (size_t bytePosition = 0; bytePosition < byteCount; bytePosition++) {
     char byte = 0;
-    int remainingBits = bits.size() - (bytePosition * 8);
-    int bitsInByte = min(8, remainingBits);
-    for (int bitPosition = 0; bitPosition < bitsInByte; bitPosition++) {
+    size_t remainingBits = bits.size() - (bytePosition * 8);
+    size_t bitsInByte = min(size_t(8), remainingBits);
+    for (size_t bitPosition = 0; bitPosition < bitsInByte; bitPosition++) {
       bool bit = bits[bitPosition + (bytePosition * 8)];
       if (bit) {
         byte |= 1 << bitPosition;

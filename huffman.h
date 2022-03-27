@@ -11,7 +11,7 @@ private:
   std::vector<bool> bits;
 
 public:
-  int size() const { return bits.size(); }
+  size_t size() const { return bits.size(); }
 
   void clear() { bits.clear(); }
   void append(bool bit) { bits.push_back(bit); }
@@ -45,8 +45,8 @@ public:
   std::string toBinaryString() const;
   std::string toByteString() const;
 
-  bool operator[](int index) const { return bits.at(index); }
-  int read(int offset, int bitCount) const {
+  bool operator[](size_t index) const { return bits.at(index); }
+  int read(size_t offset, int bitCount) const {
     int result = 0;
     for (int i = 0; i < bitCount; i++) {
       bool bit = bits[offset + i];
@@ -56,7 +56,7 @@ public:
     }
     return result;
   }
-  Bitstring readBits(int offset, int bitCount) const {
+  Bitstring readBits(size_t offset, int bitCount) const {
     Bitstring result;
     for (int i = 0; i < bitCount; i++) {
       result += bits[offset + i];

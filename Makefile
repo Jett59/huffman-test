@@ -1,5 +1,5 @@
 CXX:=clang++
-CXXFLAGS:=-std=c++17 -g -Wall -Wextra -pedantic
+CXXFLAGS:=-std=c++17 -g -Wall -Wextra -pedantic -fno-limit-debug-info
 
 LIB-SRCS:=bitstring.cpp huffman.cpp
 
